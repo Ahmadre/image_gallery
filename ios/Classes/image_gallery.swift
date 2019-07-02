@@ -37,10 +37,22 @@ import Photos;
                     savedLocalIdentifiers.append(localIdentifier)
                     
                     imgManager.requestImage(for: asset, targetSize: PHImageManagerMaximumSize, contentMode: PHImageContentMode.aspectFit, options: PHImageRequestOptions(), resultHandler:{(image, info) in
-                        let path = (info?["PHImageFileURLKey"] as! NSURL).path!;
-                    
+                        
                         if image != nil {
-                                allImages.append(path);
+                            var imageData: Data?
+                            if let cgImage = image!.cgImage, cgImage.renderingIntent == .defaultIntent {
+                                imageData = UIImageJPEGRepresentation(image!, 0.8)
+                            }
+                            else {
+                                imageData = UIImagePNGRepresentation(image!)
+                            }
+                            let guid = ProcessInfo.processInfo.globallyUniqueString;
+                            let tmpFile = String(format: "image_picker_%@.jpg", guid);
+                            let tmpDirectory = NSTemporaryDirectory();
+                            let tmpPath = (tmpDirectory as NSString).appendingPathComponent(tmpFile);
+                            if(FileManager.default.createFile(atPath: tmpPath, contents: imageData, attributes: [:])) {
+                                allImages.append(tmpPath)
+                            }
                         }
                         totalItration += 1
                         if totalItration == (fetchResult.count) {
