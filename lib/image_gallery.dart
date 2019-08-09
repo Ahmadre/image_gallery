@@ -9,10 +9,10 @@ class FlutterGallaryPlugin {
 
   static Future<Object> get getAllImages async {
     if (Platform.isIOS) {
-      Map<dynamic, dynamic> object = await _channel.invokeMethod('getAllImages');
+      var object = await _channel.invokeMethod('getAllImages');
       return object;
     } else {
-      List object = await _channel.invokeListMethod('getAllImages');
+      var object = await _channel.invokeListMethod('getAllImages');
 
       List<String> result = new List();
       for (var item in object) {
