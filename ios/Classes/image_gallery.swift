@@ -20,8 +20,9 @@ public class SwiftFlutterGallaryPlugin: NSObject, FlutterPlugin {
                 let imgManager = PHImageManager.default()
                 let requestOptions = PHImageRequestOptions()
                 requestOptions.isSynchronous = true
+                requestOptions.isNetworkAccessAllowed = true
                 let fetchOptions = PHFetchOptions()
-                fetchOptions.sortDescriptors = [NSSortDescriptor(key:"creationDate", ascending: true)]
+                fetchOptions.sortDescriptors = [NSSortDescriptor(key:"creationDate", ascending: false)]
                 
                 fetchOptions.predicate = NSPredicate(format: "mediaType = %d || mediaType = %d", PHAssetMediaType.image.rawValue, PHAssetMediaType.video.rawValue)
                 
@@ -41,11 +42,11 @@ public class SwiftFlutterGallaryPlugin: NSObject, FlutterPlugin {
                     let localIdentifier = asset.localIdentifier
                     savedLocalIdentifiers.append(localIdentifier)
                     
-                    imgManager.requestImage(for: asset, targetSize: CGSize(width: 512.0, height: 512.0), contentMode: PHImageContentMode.aspectFit, options: PHImageRequestOptions(), resultHandler:{(image, info) in
+                    imgManager.requestImage(for: asset, targetSize: CGSize(width: 1024.0, height: 1024.0), contentMode: PHImageContentMode.aspectFit, options: requestOptions, resultHandler:{(image, info) in
                         
                         asset.getURL(completionHandler: { (url, type) in
                             
-                            assetDetailsDict.setValue(url?.path, forKey: "actulaPath")
+                            assetDetailsDict.setValue(url?.path, forKey: "actualPath")
                             
                             if image != nil {
                                 var imageData: Data?
@@ -62,7 +63,7 @@ public class SwiftFlutterGallaryPlugin: NSObject, FlutterPlugin {
                                 if(FileManager.default.createFile(atPath: tmpPath, contents: imageData, attributes: [:])) {
                                     allImages.append(tmpPath)
                                     
-                                    assetDetailsDict.setValue(tmpPath, forKey: "thumbailPath")
+                                    assetDetailsDict.setValue(tmpPath, forKey: "thumbnailPath")
                                     assetDetailsDict.setValue(type, forKey: "typeOfMedia")
                                     allAssetsDict.append(assetDetailsDict)
                                 }
