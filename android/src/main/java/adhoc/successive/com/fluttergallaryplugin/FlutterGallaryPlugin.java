@@ -190,15 +190,16 @@ public class FlutterGallaryPlugin implements MethodCallHandler {
         Map<String, String> item = new HashMap<>();
         //  ImageModel imageModel = new ImageModel();
 
-        item.put("path", c.getString(0));
+        item.put("actualPath", c.getString(0));
         item.put("date", c.getString(1));
 
         allImageList.add(item);
 
       }
       c.close();
+
+      Collections.sort(allImageList, new GalleryDateComparator());
     }
-    Collections.sort(allImageList, new GalleryDateComparator());
     return allImageList;
   }
 }
