@@ -16,7 +16,7 @@ class FlutterGallaryPlugin {
 
       List<String> result = new List();
       for (var item in object) {
-        result.add(item['path']);
+        result.add(item['actualPath']);
       }
 
       return result.reversed.toList();
