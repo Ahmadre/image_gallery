@@ -22,4 +22,8 @@ class FlutterGallaryPlugin {
       return result.reversed.toList();
     }
   }
+
+  static Future<int> get getImagesCount async {
+    return await _channel.invokeMethod('getImagesCount');
+  }
 }
