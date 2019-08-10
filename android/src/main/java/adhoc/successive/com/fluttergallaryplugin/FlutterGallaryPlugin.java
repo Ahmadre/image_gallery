@@ -106,14 +106,71 @@ public class FlutterGallaryPlugin implements MethodCallHandler {
 
     this.result=result;
     if (call.method.equals("getAllImages")) {
-
       getPermissionResult(result,activity);
+    } else if (call.method.equals("getImagesCount")) {
+      getPermissionCountResult(result, activity);
     } else {
       result.notImplemented();
     }
   }
 
+  public void getPermissionCountResult(final Result result, final Activity activity)
+  {
+    Dexter.withActivity(activity)
+            .withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            .withListener(new PermissionListener() {
+              @Override
+              public void onPermissionGranted(PermissionGrantedResponse response) {
+                result.success(getImagesCount(activity));
+              }
 
+              @Override
+              public void onPermissionDenied(PermissionDeniedResponse response) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                builder.setMessage("This permission is needed for use this features of the app so please, allow it!");
+                builder.setTitle("We need this permission");
+                builder.setCancelable(false);
+                builder.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+                  public void onClick(DialogInterface dialog, int id) {
+                    dialog.cancel();
+                    Intent intent = new Intent();
+                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    Uri uri = Uri.fromParts("package", activity.getPackageName(), null);
+                    intent.setData(uri);
+                    activity.startActivity(intent);
+
+                  } });
+                builder.setNegativeButton( "Cancel", new DialogInterface.OnClickListener() {
+                  public void onClick(DialogInterface dialog, int id) { dialog.cancel(); } });
+                AlertDialog alert = builder.create(); alert.show();
+
+
+
+              }
+
+              @Override
+              public void onPermissionRationaleShouldBeShown(PermissionRequest permission, final PermissionToken token) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                builder.setMessage("This permission is needed for use this features of the app so please, allow it!");
+                builder.setTitle("We need this permission");
+                builder.setCancelable(false);
+                builder.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+                  public void onClick(DialogInterface dialog, int id) {
+                    dialog.cancel();
+                    token.continuePermissionRequest();
+
+                  } });
+                builder.setNegativeButton( "Cancel", new DialogInterface.OnClickListener() {
+                  public void onClick(DialogInterface dialog, int id) { dialog.cancel();
+                    token.cancelPermissionRequest();
+                  } });
+                AlertDialog alert = builder.create(); alert.show();
+              }
+            }).check();
+
+  }
 
   public void getPermissionResult(final Result result, final Activity activity)
   {
@@ -201,5 +258,32 @@ public class FlutterGallaryPlugin implements MethodCallHandler {
       Collections.sort(allImageList, new GalleryDateComparator());
     }
     return allImageList;
+  }
+
+  public int getImagesCount(Activity activity) {
+
+    ArrayList<Map<String, String>> allImageList = new ArrayList<>();
+
+    Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+    String[] projection = {
+            MediaStore.Images.ImageColumns.DATA,
+            MediaStore.Images.ImageColumns.DATE_ADDED,
+            MediaStore.Images.ImageColumns.DISPLAY_NAME,
+            MediaStore.Images.ImageColumns.TITLE};
+    Cursor c = activity.getContentResolver().query(uri, projection, null, null, null);
+    if (c != null) {
+      while (c.moveToNext()) {
+        Map<String, String> item = new HashMap<>();
+        //  ImageModel imageModel = new ImageModel();
+
+        item.put("actualPath", c.getString(0));
+        item.put("date", c.getString(1));
+
+        allImageList.add(item);
+
+      }
+      c.close();
+    }
+    return allImageList.size();
   }
 }

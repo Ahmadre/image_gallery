@@ -13,6 +13,19 @@ public class SwiftFlutterGallaryPlugin: NSObject, FlutterPlugin {
         if (call.method == "getPlatformVersion") {
             result("iOS " + UIDevice.current.systemVersion)
         }
+        else if (call.method == "getImagesCount") {
+            DispatchQueue.main.async {
+                
+                let fetchOptions = PHFetchOptions()
+                fetchOptions.sortDescriptors = [NSSortDescriptor(key:"creationDate", ascending: false)]
+                
+                fetchOptions.predicate = NSPredicate(format: "mediaType = %d || mediaType = %d", PHAssetMediaType.image.rawValue, PHAssetMediaType.video.rawValue)
+                
+                let fetchResult = PHAsset.fetchAssets(with: fetchOptions)
+                
+                result(fetchResult.count)
+            }
+        }
         else if (call.method == "getAllImages") {
             
             DispatchQueue.main.async {
