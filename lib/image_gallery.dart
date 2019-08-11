@@ -10,7 +10,9 @@ class FlutterGallaryPlugin {
   static Future<Object> get getAllImages async {
     if (Platform.isIOS) {
       var object = await _channel.invokeMethod('getAllImages');
-      return object;
+      List result = new List.from(object);
+      result.removeWhere((item) => item['actualPath'].toString().endsWith('.HEIC'));
+      return result;
     } else {
       var object = await _channel.invokeListMethod('getAllImages');
 

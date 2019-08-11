@@ -34,13 +34,14 @@ public class SwiftFlutterGallaryPlugin: NSObject, FlutterPlugin {
                 let requestOptions = PHImageRequestOptions()
                 requestOptions.isSynchronous = true
                 requestOptions.isNetworkAccessAllowed = true
+                requestOptions.deliveryMode = PHImageRequestOptionsDeliveryMode.fastFormat
                 let fetchOptions = PHFetchOptions()
                 fetchOptions.sortDescriptors = [NSSortDescriptor(key:"creationDate", ascending: false)]
                 
                 fetchOptions.predicate = NSPredicate(format: "mediaType = %d || mediaType = %d", PHAssetMediaType.image.rawValue, PHAssetMediaType.video.rawValue)
                 
                 let fetchResult = PHAsset.fetchAssets(with: fetchOptions)
-                var allImages = [String]()
+//                var allImages = [String]()
                 var allAssetsDict = [NSDictionary]()
                 
                 var totalItration = 0
@@ -55,32 +56,36 @@ public class SwiftFlutterGallaryPlugin: NSObject, FlutterPlugin {
                     let localIdentifier = asset.localIdentifier
                     savedLocalIdentifiers.append(localIdentifier)
                     
-                    imgManager.requestImage(for: asset, targetSize: CGSize(width: 1024.0, height: 1024.0), contentMode: PHImageContentMode.aspectFit, options: requestOptions, resultHandler:{(image, info) in
+                    imgManager.requestImage(for: asset, targetSize: CGSize(width: 512.0, height: 512.0), contentMode: PHImageContentMode.aspectFit, options: requestOptions, resultHandler:{(image: UIImage?, info) in
                         
                         asset.getURL(completionHandler: { (url, type) in
                             
                             assetDetailsDict.setValue(url?.path, forKey: "actualPath")
+                            allAssetsDict.append(assetDetailsDict)
                             
-                            if image != nil {
-                                var imageData: Data?
-                                if let cgImage = image!.cgImage, cgImage.renderingIntent == .defaultIntent {
-                                    imageData = UIImageJPEGRepresentation(image!, 0.8)
-                                }
-                                else {
-                                    imageData = UIImagePNGRepresentation(image!)
-                                }
-                                let guid = ProcessInfo.processInfo.globallyUniqueString;
-                                let tmpFile = String(format: "image_picker_%@.jpg", guid);
-                                let tmpDirectory = NSTemporaryDirectory();
-                                let tmpPath = (tmpDirectory as NSString).appendingPathComponent(tmpFile);
-                                if(FileManager.default.createFile(atPath: tmpPath, contents: imageData, attributes: [:])) {
-                                    allImages.append(tmpPath)
-                                    
-                                    assetDetailsDict.setValue(tmpPath, forKey: "thumbnailPath")
-                                    assetDetailsDict.setValue(type, forKey: "typeOfMedia")
-                                    allAssetsDict.append(assetDetailsDict)
-                                }
-                            }
+//                            if image != nil {
+//                                var imageData: Data?
+//                                if let cgImage = image!.cgImage, cgImage.renderingIntent == .defaultIntent {
+//                                    imageData = UIImageJPEGRepresentation(image!, 0.8)
+//                                }
+//                                else {
+//                                    imageData = UIImagePNGRepresentation(image!)
+//                                }
+//                                assetDetailsDict.setValue(imageData, forKey: "imageBytes")
+//                                assetDetailsDict.setValue(type, forKey: "typeOfMedia")
+//                                allAssetsDict.append(assetDetailsDict)
+//                                let guid = ProcessInfo.processInfo.globallyUniqueString;
+//                                let tmpFile = String(format: "image_picker_%@.jpg", guid);
+//                                let tmpDirectory = NSTemporaryDirectory();
+//                                let tmpPath = (tmpDirectory as NSString).appendingPathComponent(tmpFile);
+//                                if(FileManager.default.createFile(atPath: tmpPath, contents: imageData, attributes: [:])) {
+//                                    allImages.append(tmpPath)
+//
+//                                    assetDetailsDict.setValue(tmpPath, forKey: "thumbnailPath")
+//                                    assetDetailsDict.setValue(type, forKey: "typeOfMedia")
+//                                    allAssetsDict.append(assetDetailsDict)
+//                                }
+//                            }
                             totalItration += 1
                             if totalItration == (fetchResult.count) {
                                 result(allAssetsDict)
